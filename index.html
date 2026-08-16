@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mental Math Trainer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f3f4f6;color:#202124}.wrap{max-width:760px;margin:auto;padding:24px}.card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 4px 20px #0001;margin-bottom:18px}.top{display:flex;justify-content:space-between;gap:14px;align-items:center}h1,h2{margin-top:0}.sub{color:#666}.hidden{display:none!important}button,input,select{font:inherit}button{border:0;border-radius:12px;padding:12px 16px;cursor:pointer;background:#222;color:#fff}.secondary{background:#e9eaee;color:#222}.big{width:100%;font-size:19px;padding:15px}.gameChoice{width:100%;display:flex;align-items:center;text-align:left;gap:14px;margin:10px 0;background:#f1f2f5;color:#222}.gameChoice small{display:block;color:#666;margin-top:3px}.gameIcon{font-size:30px}.gameChoice.disabled{opacity:.55;cursor:not-allowed}.ops{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.op{background:#eef0f4;color:#222}.op.active{background:#222;color:#fff}label{display:block;font-weight:650;margin:17px 0 8px}select,input[type=number],#username{width:100%;padding:12px;border:1px solid #d7d9df;border-radius:10px;background:#fff}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.question{text-align:center;font-size:48px;font-weight:800;padding:30px 0 18px}.answer{font-size:24px;text-align:center}.feedback{text-align:center;min-height:32px;font-weight:700;margin:10px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#f5f6f8;border-radius:12px;padding:12px;text-align:center}.stat b{display:block;font-size:22px}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #eee;text-align:left}.good{color:#147a3e}.bad{color:#b42318}.modal{position:fixed;inset:0;background:#0006;z-index:30;align-items:center;justify-content:center;padding:20px}.modalCard{max-width:420px;width:100%}#countdown{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:40;color:#fff}#countdown.hidden{display:none}.countNum{font-size:110px;font-weight:800}@media(max-width:600px){.ops{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.question{font-size:38px}.wrap{padding:12px}}
+
+/* Phone-friendly layout */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+button, select, input {
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+}
+button:active { transform: scale(.98); }
+input, select { font-size: 18px; }
+.answer {
+  min-height: 58px !important;
+  font-size: 28px !important;
+}
+.question {
+  line-height: 1.15;
+  word-break: break-word;
+}
+@media (max-width: 600px) {
+  .wrap {
+    width: 100%;
+    max-width: none;
+    padding: 10px;
+  }
+  .card {
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .top {
+    align-items: flex-start;
+  }
+  h1 {
+    font-size: 25px;
+    line-height: 1.15;
+    margin-bottom: 5px;
+  }
+  h2 { font-size: 21px; }
+  .top > button {
+    flex-shrink: 0;
+    padding: 10px 12px;
+  }
+  .gameChoice {
+    min-height: 72px;
+    padding: 13px;
+  }
+  .gameIcon { font-size: 27px; }
+  .gameChoice small {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+  .ops {
+    grid-template-columns: 1fr 1fr;
+  }
+  .op {
+    min-height: 54px;
+    font-size: 16px;
+  }
+  .row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  label {
+    margin-top: 14px;
+  }
+  .big {
+    min-height: 54px;
+    font-size: 18px;
+  }
+  .question {
+    font-size: clamp(38px, 13vw, 62px);
+    padding: 34px 4px 24px;
+  }
+  .answer {
+    width: 100%;
+    font-size: 30px !important;
+    text-align: center;
+  }
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stat b { font-size: 20px; }
+  table {
+    font-size: 13px;
+  }
+  th, td {
+    padding: 7px 5px;
+  }
+  #countdown .countNum {
+    font-size: 90px;
+  }
+  .modal {
+    align-items: flex-end;
+  }
+  .modalCard {
+    margin-bottom: 0;
+    border-radius: 18px 18px 0 0;
+  }
+}
+
+</style>
+</head>
+<body>
+<div id="countdown" class="hidden"><div class="countNum" id="countNum">3</div></div>
+
+<div id="loginModal" class="modal hidden">
+  <div class="card modalCard">
+    <h2>👤 Create your username</h2>
+    <p class="sub">Your username is stored only on this browser for now.</p>
+    <input id="username" maxlength="20" placeholder="e.g. MathMaster">
+    <br><br>
+    <button class="big" id="saveUser">SAVE</button>
+    <br><br>
+    <button class="secondary big" id="closeLogin">CANCEL</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="card" id="home">
+    <div class="top">
+      <div>
+        <h1>🧠 Mental Math Trainer</h1>
+        <p id="userGreeting" class="sub">Train your mental math.</p>
+      </div>
+      <button class="secondary" id="loginBtn">👤 Login</button>
+    </div>
+
+    <div id="menu">
+      <h2>Choose a game</h2>
+      <button class="gameChoice" id="chooseMental">
+        <span class="gameIcon">🧮</span>
+        <span><b>Mental Math Trainer</b><small>Practice addition, subtraction, multiplication and division</small></span>
+        <span>›</span>
+      </button>
+      <button class="gameChoice disabled"><span class="gameIcon">🔢</span><span><b>Sudoku</b><small>Coming soon</small></span><span>🔒</span></button>
+      <button class="gameChoice disabled"><span class="gameIcon">🧩</span><span><b>KenKen</b><small>Coming soon</small></span><span>🔒</span></button>
+    </div>
+
+    <div id="settingsPanel" class="hidden">
+      <button class="secondary" id="backMenu">← Back</button>
+      <h2>🧮 Mental Math Trainer</h2>
+      <label>Operations</label>
+      <div class="ops">
+        <button class="op active" data-op="+">➕ Add</button>
+        <button class="op" data-op="-">➖ Subtract</button>
+        <button class="op" data-op="×">✖️ Multiply</button>
+        <button class="op" data-op="÷">➗ Divide</button>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Number size</label>
+          <select id="digits">
+            <option value="1">1 digit</option>
+            <option value="2" selected>2 digits</option>
+            <option value="3">3 digits</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+        <div>
+          <label>Questions</label>
+          <select id="count">
+            <option>10</option><option selected>20</option><option>30</option><option>50</option><option>100</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Question mode</label>
+      <select id="questionMode">
+        <option value="fixed">Fixed number of questions</option>
+        <option value="untilwrong">End when I get one wrong</option>
+      </select>
+
+      <label>Time mode</label>
+      <select id="mode">
+        <option value="practice">Practice — no time limit</option>
+        <option value="timed">Timed — track your speed</option>
+      </select>
+      <br><br>
+      <button class="big" id="start">START GAME</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="game">
+    <div class="top">
+      <b id="progress">Question 1/20</b>
+      <b>⏱️ <span id="timer">0.0</span>s</b>
+    </div>
+    <div class="question" id="question">12 + 7 = ?</div>
+    <input class="answer" id="answer" type="number" inputmode="numeric" autocomplete="off" autocapitalize="off" inputmode="numeric" placeholder="Your answer">
+    <br><br>
+    <button class="big" id="submit">ANSWER</button>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="card hidden" id="result">
+    <h2>🎉 Game complete</h2>
+    <div class="stats">
+      <div class="stat">Score<b id="rScore">0</b></div>
+      <div class="stat">Accuracy<b id="rAcc">0%</b></div>
+      <div class="stat">Avg. time<b id="rAvg">0.0s</b></div>
+      <div class="stat">Streak<b id="rStreak">0</b></div>
+    </div>
+    <br>
+    <button class="big" id="again">PLAY AGAIN</button>
+    <br><br>
+    <button class="secondary big" id="homeBtn">CHOOSE ANOTHER GAME</button>
+  </div>
+
+  <div class="card" id="history">
+    <div class="top"><h2>📊 Recent games</h2><button class="secondary" id="clear">Clear</button></div>
+    <div id="historyContent"></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let selectedOps=new Set(["+"]),settings={},questions=[],index=0,correct=0,streak=0,bestStreak=0,totalMs=0,questionStarted=0,timerInt=null;
+let username=localStorage.getItem("mathUsername")||"";
+
+document.querySelectorAll(".op").forEach(b=>b.onclick=()=>{
+  const op=b.dataset.op;
+  if(selectedOps.has(op)){if(selectedOps.size===1)return;selectedOps.delete(op);b.classList.remove("active")}
+  else{selectedOps.add(op);b.classList.add("active")}
+});
+
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function makeNum(d){
+  if(d==="mixed")d=String(randInt(1,3));d=Number(d);
+  return d===1?randInt(1,9):randInt(10**(d-1),10**d-1)
+}
+function makeQuestion(){
+  let op=[...selectedOps][randInt(0,selectedOps.size-1)],d=settings.digits,a=makeNum(d),b=makeNum(d),answer;
+  if(op==="+")answer=a+b;
+  if(op==="-"){if(b>a)[a,b]=[b,a];answer=a-b}
+  if(op==="×"){if(Number(d)===1){a=randInt(2,9);b=randInt(2,9)}answer=a*b}
+  if(op==="÷"){b=randInt(2,Math.min(12,Math.max(2,b)));answer=randInt(1,d==="3"?50:20);a=b*answer}
+  return{text:`${a} ${op} ${b} = ?`,answer}
+}
+function formatTime(ms){return(ms/1000).toFixed(1)}
+function renderHistory(){
+  const rec=JSON.parse(localStorage.getItem("mathRecords")||"[]");
+  $("historyContent").innerHTML=!rec.length?'<p class="sub">No games played yet.</p>':
+  `<table><thead><tr><th>Date</th><th>Score</th><th>Accuracy</th><th>Avg.</th><th>Streak</th></tr></thead><tbody>${rec.slice(0,10).map(r=>`<tr><td>${new Date(r.date).toLocaleDateString()}</td><td>${r.score}/${r.total}</td><td>${r.accuracy}%</td><td>${r.avg}s</td><td>${r.streak}</td></tr>`).join("")}</tbody></table>`
+}
+function saveSession(){
+  const rec=JSON.parse(localStorage.getItem("mathRecords")||"[]");
+  rec.unshift({date:new Date().toISOString(),score:correct,total:questions.length,accuracy:Math.round(correct/questions.length*100),avg:Math.round(totalMs/questions.length)/1000,streak:bestStreak});
+  localStorage.setItem("mathRecords",JSON.stringify(rec.slice(0,50)));renderHistory()
+}
+function startGame(){
+  settings={digits:$("digits").value,count:Number($("count").value),mode:$("mode").value,questionMode:$("questionMode").value};
+  questions=Array.from({length:settings.count},makeQuestion);index=correct=streak=bestStreak=totalMs=0;
+  $("home").classList.add("hidden");$("history").classList.add("hidden");$("result").classList.add("hidden");$("game").classList.remove("hidden");
+  startCountdown()
+}
+function startCountdown(){
+  const o=$("countdown"),n=$("countNum");o.classList.remove("hidden");let x=3;n.textContent=x;
+  const t=setInterval(()=>{x--;if(x>0)n.textContent=x;else{clearInterval(t);n.textContent="GO!";setTimeout(()=>{o.classList.add("hidden");showQuestion()},450)}},700)
+}
+function showQuestion(){
+  $("progress").textContent=`Question ${index+1}/${questions.length}`;$("question").textContent=questions[index].text;$("answer").value="";$("answer").focus();$("feedback").textContent="";
+  questionStarted=performance.now();clearInterval(timerInt);timerInt=setInterval(()=>{$("timer").textContent=formatTime(performance.now()-questionStarted)},100)
+}
+function submit(){
+  if(!$("answer").value.trim())return;clearInterval(timerInt);const elapsed=performance.now()-questionStarted;totalMs+=elapsed,val=Number($("answer").value),q=questions[index];
+  if(val===q.answer){correct++;streak++;bestStreak=Math.max(bestStreak,streak);$("feedback").innerHTML='<span class="good">✓ Correct!</span>'}
+  else{streak=0;$("feedback").innerHTML=`<span class="bad">✗ Answer: ${q.answer}</span>`}
+  index++;setTimeout(()=>{if(settings.questionMode==="untilwrong"&&val!==q.answer){finish();return}if(index<questions.length)showQuestion();else finish()},450)
+}
+function finish(){
+  $("game").classList.add("hidden");$("result").classList.remove("hidden");$("history").classList.remove("hidden");
+  $("rScore").textContent=correct;$("rAcc").textContent=Math.round(correct/questions.length*100)+"%";$("rAvg").textContent=formatTime(totalMs/questions.length)+"s";$("rStreak").textContent=bestStreak;saveSession()
+}
+function updateGreeting(){$("userGreeting").textContent=username?`Welcome, ${username}!`:"Train your mental math and track your progress."}
+
+$("chooseMental").onclick=()=>{$("menu").classList.add("hidden");$("settingsPanel").classList.remove("hidden")};
+$("backMenu").onclick=()=>{$("settingsPanel").classList.add("hidden");$("menu").classList.remove("hidden")};
+$("start").onclick=startGame;$("submit").onclick=submit;$("answer").addEventListener("keydown",e=>{if(e.key==="Enter")submit()});
+$("again").onclick=startGame;
+$("homeBtn").onclick=()=>{$("result").classList.add("hidden");$("game").classList.add("hidden");$("history").classList.remove("hidden");$("home").classList.remove("hidden");$("settingsPanel").classList.add("hidden");$("menu").classList.remove("hidden")};
+$("loginBtn").onclick=()=>{$("username").value=username;$("loginModal").classList.remove("hidden");$("loginModal").style.display="flex"};
+$("closeLogin").onclick=()=>{$("loginModal").classList.add("hidden");$("loginModal").style.display="none"};
+$("saveUser").onclick=()=>{const n=$("username").value.trim();if(!n)return alert("Please enter a username.");username=n;localStorage.setItem("mathUsername",username);$("loginModal").classList.add("hidden");$("loginModal").style.display="none";updateGreeting()};
+$("clear").onclick=()=>{if(confirm("Clear all saved records?")){localStorage.removeItem("mathRecords");renderHistory()}};
+renderHistory();updateGreeting();
+</script>
+</body>
+</html>
